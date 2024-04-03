@@ -16,8 +16,8 @@ class CVT64(width: Int = 64) extends CVT(width){
   val widthExpAdder = 13 // 13bits is enough
 
   // input
-  val (fire, src, sew, opType, rmNext, input1H, output1H) =
-      (io.fire, io.src, io.sew, io.opType, io.rm, io.input1H, io.output1H)
+  val (fire, src, sew, opType, rmNext, input1H, output1H, isFpToVecInst) =
+      (io.fire, io.src, io.sew, io.opType, io.rm, io.input1H, io.output1H, io.isFpToVecInst)
   val fireReg = GatedValidRegNext(fire)
 
   // control for cycle 0
@@ -26,6 +26,7 @@ class CVT64(width: Int = 64) extends CVT(width){
   val inIsFpNext = opType.head(1).asBool
   val outIsFpNext = opType.tail(1).head(1).asBool
   val hasSignIntNext = opType(0).asBool
+  val fpCanonicalNAN = isFpToVecInst & inIsFpNext & (input1H(1) & !src.head(48).andR | input1H(2) & !src.head(32).andR)
 
   val int1HSrcNext = input1H
   val float1HSrcNext = input1H.head(3)//exclude f8
@@ -66,9 +67,9 @@ class CVT64(width: Int = 64) extends CVT(width){
   val isnormalSrcNext = !expIsOnesSrcNext && !expIsZeroSrcNext
   val isInfSrcNext = expIsOnesSrcNext && fracIsZeroSrcNext
   val isZeroSrcNext = expIsZeroSrcNext && fracIsZeroSrcNext
-  val isNaNSrcNext = expIsOnesSrcNext && fracNotZeroSrcNext
+  val isNaNSrcNext = expIsOnesSrcNext && fracNotZeroSrcNext | fpCanonicalNAN
   val isSNaNSrcNext = isNaNSrcNext && !fracSrc.head(1)
-  val isQNaNSrcNext = isNaNSrcNext && fracSrc.head(1).asBool
+  val isQNaNSrcNext = isNaNSrcNext && fracSrc.head(1).asBool | fpCanonicalNAN
 
   // for sqrt7/rec7
   val isEstimate7Next = opType(5)
