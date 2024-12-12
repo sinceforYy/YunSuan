@@ -12,7 +12,6 @@ class VipuOpcode {
   def vredor  = 37.U(width.W)
   def vredxor = 38.U(width.W)
   def vcpop   = 39.U(width.W)
-  def vfirst  = 40.U(width.W)
   def vmsbf   = 41.U(width.W)
   def vmsif   = 42.U(width.W)
   def vmsof   = 43.U(width.W)

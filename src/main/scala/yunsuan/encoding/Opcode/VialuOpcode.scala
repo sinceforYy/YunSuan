@@ -44,8 +44,6 @@ object VialuOpcode {
   def vbrev  = 48.U(width.W)
   def vbrev8 = 49.U(width.W)
   def vrev8  = 50.U(width.W)
-  def vclz   = 51.U(width.W)
-  def vctz   = 52.U(width.W)
   def vrol   = 53.U(width.W)
   def vror   = 54.U(width.W)
   def vwsll  = 55.U(width.W)

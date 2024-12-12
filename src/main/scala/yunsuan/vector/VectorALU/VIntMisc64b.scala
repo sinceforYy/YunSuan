@@ -283,106 +283,50 @@ class VIntMisc64b extends Module {
   )
 
   /**
-   * vclz.v
-   * vctz.v
    * vcpop.v
    */
   val countResult = Wire(UInt(64.W))
-  val countResult_8  = Wire(Vec(4, UInt(8.W)))
-  val countResult_16 = Wire(Vec(2, UInt(16.W)))
-  val countResult_32 = Wire(UInt(32.W))
-  val countResult_64 = Wire(UInt(64.W))
   val pop_8  = Wire(Vec(8, UInt(8.W)))
   val pop_16 = Wire(Vec(4, UInt(5.W)))
   val pop_32 = Wire(Vec(2, UInt(6.W)))
-  val pop_64 = Wire(Vec(1, UInt(7.W)))
+  val pop_64 = Wire(UInt(7.W))
   val cnt8  = Wire(Vec(8, UInt(8.W)))
   val cnt16 = Wire(Vec(4, UInt(16.W)))
   val cnt32 = Wire(Vec(2, UInt(32.W)))
-  val cnt64 = Wire(Vec(1, UInt(64.W)))
+  val cnt64 = Wire(UInt(64.W))
 
   pop_8 := vs2.asTypeOf(pop_8)
 
-  for (i <- 0 until 4) {
-    countResult_8(i) := Mux(opcode.isClz, vs2(8*i+7, 8*i), VecInit(vs2(8*i+7, 8*i).asBools.reverse).asUInt)
-  }
-  for (i <- 0 until 2) {
-    countResult_16(i) := Mux1H(
-      Seq(
-        eewVd.is8,
-        eewVd.is16,
-      ),
-      Seq(
-        Mux(opcode.isClz, vs2(8*i+7+32,8*i+32) << 8, VecInit(vs2(8*i+7+32,8*i+32).asBools.reverse).asUInt << 8) | (1.U << 7),
-        Mux(opcode.isClz, vs2(16*i+15,16*i), VecInit(vs2(16*i+15,16*i).asBools.reverse).asUInt),
-      )
-    )
+  for (i <- 0 until 8) {
+    cnt8(i) := PopCount(pop_8(i))
   }
 
-  countResult_32 := Mux1H(
-    Seq(
-      eewVd.is8,
-      eewVd.is16,
-      eewVd.is32,
-    ),
-    Seq(
-      Mux(opcode.isClz, vs2(55, 48) << 24, VecInit(vs2(55, 48).asBools.reverse).asUInt << 24) | (1.U << 23),
-      Mux(opcode.isClz, vs2(47, 32) << 16, VecInit(vs2(47, 32).asBools.reverse).asUInt << 16) | (1.U << 15),
-      Mux(opcode.isClz, vs2(31, 0), VecInit(vs2(31, 0).asBools.reverse).asUInt),
-    )
-  )
-  countResult_64 := Mux1H(
+  for (i <- 0 until 4) {
+    pop_16(i) := cnt8(i*2) +& cnt8(i*2+1)
+  }
+
+  for (i <- 0 until 2) {
+    pop_32(i) := pop_16(i*2) +& pop_16(i*2+1)
+  }
+
+  pop_64 := pop_32(0) +& pop_32(1)
+
+  for (i <- 0 until 4) {
+    cnt16(i) := pop_16(i)
+  }
+
+  for (i <- 0 until 2) {
+    cnt32(i) := pop_32(i)
+  }
+
+  cnt64 := pop_64
+
+  countResult := Mux1H(
     Seq(
       eewVd.is8,
       eewVd.is16,
       eewVd.is32,
       eewVd.is64,
-    ),
-    Seq(
-      Mux(opcode.isClz, vs2(63, 56) << 56, VecInit(vs2(63, 56).asBools.reverse).asUInt << 56) | (1.U << 55),
-      Mux(opcode.isClz, vs2(63, 48) << 48, VecInit(vs2(63, 48).asBools.reverse).asUInt << 48) | (1.U << 47),
-      Mux(opcode.isClz, vs2(63, 32) << 32, VecInit(vs2(63, 32).asBools.reverse).asUInt << 32) | (1.U << 31),
-      Mux(opcode.isClz, vs2, VecInit(vs2.asBools.reverse).asUInt),
-    )
-  )
-
-  val cnt16_0_tmp = CLZ(countResult_16(0))
-  val cnt16_1_tmp = CLZ(countResult_16(1))
-  val cnt32_tmp = CLZ(countResult_32)
-  val cnt64_tmp = CLZ(countResult_64)
-
-  for (i <- 0 until 4) {
-    cnt8(i) := Mux(opcode.isVcpop, PopCount(pop_8(i)), CLZ(countResult_8(i)))
-  }
-  cnt8(4)  := Mux(opcode.isVcpop, PopCount(pop_8(4)), cnt16_0_tmp)
-  cnt8(5)  := Mux(opcode.isVcpop, PopCount(pop_8(5)), cnt16_1_tmp)
-  cnt8(6)  := Mux(opcode.isVcpop, PopCount(pop_8(6)), cnt32_tmp)
-  cnt8(7)  := Mux(opcode.isVcpop, PopCount(pop_8(7)), cnt64_tmp)
-
-  pop_16(0) := cnt8(0) +& cnt8(1)
-  pop_16(1) := cnt8(2) +& cnt8(3)
-  pop_16(2) := cnt8(4) +& cnt8(5)
-  pop_16(3) := cnt8(6) +& cnt8(7)
-
-  pop_32(0) := pop_16(0) +& pop_16(1)
-  pop_32(1) := pop_16(2) +& pop_16(3)
-
-  pop_64(0) := pop_32(0) +& pop_32(1)
-
-  cnt16(0) := Mux(opcode.isVcpop, pop_16(0), cnt16_0_tmp)
-  cnt16(1) := Mux(opcode.isVcpop, pop_16(1), cnt16_1_tmp)
-  cnt16(2) := Mux(opcode.isVcpop, pop_16(2), cnt32_tmp)
-  cnt16(3) := Mux(opcode.isVcpop, pop_16(3), cnt64_tmp)
-  cnt32(0) := Mux(opcode.isVcpop, pop_32(0), cnt32_tmp)
-  cnt32(1) := Mux(opcode.isVcpop, pop_32(1), cnt64_tmp)
-  cnt64(0) := Mux(opcode.isVcpop, pop_64(0), cnt64_tmp)
-
-  countResult := Mux1H(
-    Seq(
-      opcode.isVCount && eewVd.is8,
-      opcode.isVCount && eewVd.is16,
-      opcode.isVCount && eewVd.is32,
-      opcode.isVCount && eewVd.is64,
     ),
     Seq(
       cnt8.asUInt,

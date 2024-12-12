@@ -60,7 +60,6 @@ trait VAluBehavior {
   val vredor    = CtrlBundle(opcode = 37) 
   val vredxor   = CtrlBundle(opcode = 38) 
   val vcpop     = CtrlBundle(u8, mask, mask, opcode = 39, vm = false, vl = 16) 
-  val vfirst    = CtrlBundle(mask, mask, mask, opcode = 40, vm = false, vl = 16) 
   val vmsbf     = CtrlBundle(mask, mask, mask, opcode = 41, vm = false, vl = 16) 
   val vmsif     = CtrlBundle(mask, mask, mask, opcode = 42, vm = false, vl = 16) 
   val vmsof     = CtrlBundle(mask, mask, mask, opcode = 43, vm = false, vl = 16) 
@@ -884,8 +883,6 @@ trait VAluBehavior {
         val inputSeq = Seq(
           // vcpop
           genVAluInput(SrcBundle("h907f6e51907f6e507e4b17d97e4b17d8", "h0",  "h0", "h7e4b17d97e4b17d86c16c1616c16c160"), vcpop.copy()),
-          // vfirst
-          genVAluInput(SrcBundle("h23456781234567801111110911111108", "h0",  "h0", "h1111110911111108fedcba90fedcba90"), vfirst.copy()),
           // vmsbf
           genVAluInput(SrcBundle("ha8f5c55c2cfd89003038efd4f88dd8de", "h0",  "h6da3c06ee39c40c57d911a582ed947c7", "hb9415b8cec802448e68db7e6ec545628"), vmsbf.copy()),
           // vmsof
@@ -939,8 +936,6 @@ trait VAluBehavior {
         val outputSeq = Seq(
           // vcpop
           genVAluOutput("h2"),
-          // vfirst
-          genVAluOutput("hc"),
           // vmsbf
           genVAluOutput("hffffffffffffffffffffffffffff01c7"),
           // vmsof

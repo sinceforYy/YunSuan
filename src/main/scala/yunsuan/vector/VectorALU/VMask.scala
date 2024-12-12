@@ -52,14 +52,12 @@ class VMask extends Module {
   val all_one = (~0.U(VLEN.W))
 
   val vcpop_m = opcode.isVcpop
-  val vfirst_m = opcode.isVfirst
   val vmsbf_m = opcode.isVmsbf
   val vmsif_m = opcode.isVmsif
   val vmsof_m = opcode.isVmsof
   val viota_m = opcode.isViota
   val vid_v = opcode.isVid
 
-  val vmfirst = Wire(UInt(xLen.W))
   val vmsbf = Wire(UInt(VLEN.W))
   val vmsif = Cat(vmsbf(VLEN - 2, 0), 1.U)
   val vmsof = Wire(UInt(VLEN.W))
@@ -84,7 +82,6 @@ class VMask extends Module {
   val old_vd_reg_s1 = RegEnable(old_vd, 0.U, fire)
   val vmask_reg_s1 = RegEnable(vmask, 0.U, fire)
   val vcpop_m_reg_s1 = RegEnable(vcpop_m, false.B, fire)
-  val vfirst_m_reg_s1 = RegEnable(vfirst_m, false.B, fire)
   val vmsbf_m_reg_s1 = RegEnable(vmsbf_m, false.B, fire)
   val vmsif_m_reg_s1 = RegEnable(vmsif_m, false.B, fire)
   val vmsof_m_reg_s1 = RegEnable(vmsof_m, false.B, fire)
@@ -132,11 +129,6 @@ class VMask extends Module {
   // stage 1
   vmsof := ~vmsbf & vmsif
   vmsbf := sbf(Cat(vs2m_reg_s1.reverse))
-  vmfirst := Mux(
-    vs2m_reg_s1.asUInt.orR,
-    ZeroExt(vfirst(Cat(vs2m_reg_s1.reverse)), xLen),
-    Fill(xLen, 1.U(1.W))
-  )
   // end stage 1
   // stage 0
   // viota/vid/vcpop
@@ -214,8 +206,6 @@ class VMask extends Module {
     vd_reg := vmsif
   }.elsewhen(vmsof_m_reg_s1 && fire_reg_s1) {
     vd_reg := vmsof
-  }.elsewhen(vfirst_m_reg_s1 && fire_reg_s1) {
-    vd_reg := Cat(0.U((VLEN - xLen).W), vmfirst)
   }.elsewhen((vid_v_reg_s1 || viota_m_reg_s1) && fire_reg_s1 && !uopIdx_reg_s1(0)) {
     vd_reg := Cat(one_cnt.reverse)(VLEN - 1, 0)
   }.elsewhen((((vid_v_reg_s1 || viota_m_reg_s1) && uopIdx_reg_s1(0)) || vcpop_m_reg_s1) && fire_reg_s1) {
@@ -241,7 +231,6 @@ class VMask extends Module {
   val old_vd_reg = RegEnable(old_vd_reg_s1, 0.U, fire_reg_s1)
   val vmask_reg = RegEnable(vmask_reg_s1, 0.U, fire_reg_s1)
   val reg_vcpop_m = RegEnable(vcpop_m_reg_s1, false.B, fire_reg_s1)
-  val reg_vfirst_m = RegEnable(vfirst_m_reg_s1, false.B, fire_reg_s1)
   val reg_vmsbf_m = RegEnable(vmsbf_m_reg_s1, false.B, fire_reg_s1)
   val reg_vmsif_m = RegEnable(vmsif_m_reg_s1, false.B, fire_reg_s1)
   val reg_vmsof_m = RegEnable(vmsof_m_reg_s1, false.B, fire_reg_s1)
@@ -353,7 +342,7 @@ class VMask extends Module {
   tail_vd := old_vd_vl_mask | (mask_vd & vd_vl_mask)
 
   vd_out := vd_reg
-  when(vstart_reg >= vl_reg && !reg_vfirst_m && !reg_vcpop_m) {
+  when(vstart_reg >= vl_reg && !reg_vcpop_m) {
     vd_out := old_vd_reg
   }.elsewhen(reg_vmsbf_m || reg_vmsif_m || reg_vmsof_m) {
     vd_out := tail_vd
@@ -365,7 +354,7 @@ class VMask extends Module {
   io.out.vd := vd_out
   io.out.vxsat := false.B
 
-  dontTouch(vmfirst)
+
 }
 
 object VerilogMask extends App {

@@ -31,7 +31,7 @@ class VectorClz extends Module {
   val vs2Ctz = Wire(Vec(8, UInt(8.W)))
   val vs2Tmp = Wire(Vec(8, UInt(8.W)))
   val clz = Wire(Vec(8, UInt(4.W)))
-  val eleOROH = Wire(Vec(8, Bool()))
+  val eleOR = Wire(Vec(8, Bool()))
 
   vs2Clz := vs2.asTypeOf(vs2Clz)
 
@@ -39,37 +39,34 @@ class VectorClz extends Module {
     vs2Ctz(i) := VecInit(clz.asBools.reverse).asUInt
   }
 
-  dontTouch(vs2Clz)
-  dontTouch(vs2Ctz)
-
   vs2Tmp := Mux1H(Seq(
     opcode.isClz -> vs2Clz,
     opcode.isCtz -> vs2Ctz,
   ))
 
   for (i <- 0 until 8) {
-    eleOROH(i) := vs2Tmp(i).orR
+    eleOR(i) := vs2Tmp(i).orR
     clz(i) := CLZ(vs2Tmp(i))
   }
 
-  val ele16OROH = Wire(Vec(4, UInt(2.W)))
-  val ele32OROH = Wire(Vec(2, UInt(4.W)))
+  val ele16OR = Wire(Vec(4, UInt(2.W)))
+  val ele32OR = Wire(Vec(2, UInt(4.W)))
 
 
-  ele16OROH := eleOROH.asTypeOf(ele16OROH)
-  ele32OROH := eleOROH.asTypeOf(ele32OROH)
+  ele16OR := eleOR.asTypeOf(ele16OR)
+  ele32OR := eleOR.asTypeOf(ele32OR)
 
-  val clz16Tmp = Wire(Vec(4, UInt(2.W)))
+  val clz16Tmp = Wire(Vec(4, Bool()))
   val clz32Tmp = Wire(Vec(2, UInt(3.W)))
   val clz64Tmp = Wire(UInt(4.W))
 
   for (i <- 0 until 4) {
-    clz16Tmp(i) := CLZ(ele16OROH(i))
+    clz16Tmp(i) := ele16OR(i)(1)
   }
   for (i <- 0 until 2) {
-    clz32Tmp(i) := CLZ(ele32OROH(i))
+    clz32Tmp(i) := CLZ(ele32OR(i))
   }
-  clz64Tmp := CLZ(eleOROH)
+  clz64Tmp := CLZ(eleOR)
 
   val vsewReg = RegEnable(vsew, fire)
   val eewVdReg = SewOH(vsewReg)
@@ -89,7 +86,7 @@ class VectorClz extends Module {
   }
 
   for (i <- 0 until 4) {
-    clz16(i) := Mux(clz16TmpReg(i).orR, clzReg(i*2) + 8.U, clzReg(i*2+1))
+    clz16(i) := Mux(clz16TmpReg(i), clzReg(i*2+1), clzReg(i*2) + 8.U)
   }
 
   for (i <- 0 until 2) {

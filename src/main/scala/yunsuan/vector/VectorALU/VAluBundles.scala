@@ -42,8 +42,7 @@ class VAluOpcode extends Bundle{
   def isVredand = op === vredand
   def isVredor  = op === vredor
   def isVredxor = op === vredxor
-  def isVcpop   = op === vcpop 
-  def isVfirst  = op === vfirst
+  def isVcpop   = op === vcpop
   def isVmsbf   = op === vmsbf 
   def isVmsif   = op === vmsif 
   def isVmsof   = op === vmsof 
@@ -64,13 +63,11 @@ class VAluOpcode extends Bundle{
   def isVbrev   = op === vbrev
   def isVbrev8  = op === vbrev8
   def isVrev8   = op === vrev8
-  def isClz     = op === vclz
-  def isCtz     = op === vctz
   def isVrol    = op === vrol
   def isVror    = op === vror
   def isVwsll   = op === vwsll
   def isVrev    = op === vbrev || op === vbrev8 || op === vrev8
-  def isVCount  = op === vclz || op === vctz || op === vcpop
+  def isVCount  = op === vcpop
   def isVro     = op === vrol || op === vror
 }
 

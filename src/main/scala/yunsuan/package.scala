@@ -182,8 +182,6 @@ package object yunsuan {
     def vbrev_v     = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vbrev)  // "b00_0_101111".U(OpTypeWidth.W) // vbrev
     def vbrev8_v    = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vbrev8) // "b00_0_110000".U(OpTypeWidth.W) // vbrev8
     def vrev8_v     = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vrev8)  // "b00_0_110001".U(OpTypeWidth.W) // vrev8
-    def vclz_v      = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vclz)   // "b00_0_110010".U(OpTypeWidth.W) // vclz
-    def vctz_v      = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vctz)   // "b00_0_110011".U(OpTypeWidth.W) // vctz
     def vcpop_v     = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vcpop)  // "b00_0_110100".U(OpTypeWidth.W) // vcpop
     def vrol_vv     = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vrol)   // "b00_0_110101".U(OpTypeWidth.W) // vrol
     def vror_vv     = LiteralCat(FMT.VVV  , UINT, VialuOpcode.vror)   // "b00_0_110110".U(OpTypeWidth.W) // vror
@@ -270,7 +268,6 @@ package object yunsuan {
     def vwredsum_vs                    = "b01000010".U(OpTypeWidth.W) // vredsum
 
     def vcpop_m                        = "b01001011".U(OpTypeWidth.W) // vcpop
-    def vfirst_m                       = "b01001100".U(OpTypeWidth.W) // vfirst
     def vmsbf_m                        = "b01001101".U(OpTypeWidth.W) // vmsbf
     def vmsif_m                        = "b01001110".U(OpTypeWidth.W) // vmsif
     def vmsof_m                        = "b01001111".U(OpTypeWidth.W) // vmsof
